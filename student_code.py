@@ -143,6 +143,71 @@ class KnowledgeBase(object):
         ####################################################
         # Student code goes here
 
+        return self.kb_explain_helper(fact_or_rule, 0)
+        
+    def kb_explain_helper(self, fact_or_rule, number_of_spaces):
+        end_result = ""
+        for i in range(number_of_spaces):
+            end_result += " "
+
+        if isinstance(fact_or_rule, Fact):
+            if fact_or_rule in self.facts:
+                fact = None
+                for i in self.facts:
+                    if fact_or_rule == i:
+                        fact = i
+                        break
+
+                if fact.asserted:
+                    end_result += "fact: " + str(fact.statement) + " ASSERTED"
+                else:
+                    end_result += "fact: " + str(fact.statement)
+                    for supportingFact in fact.supported_by:
+                        end_result += "\n"
+                        for i in range(number_of_spaces):
+                            end_result += " "
+                        end_result +=  "  SUPPORTED BY"
+                        end_result += "\n" + self.kb_explain_helper(supportingFact[0], number_of_spaces + 4)
+                        end_result += "\n" + self.kb_explain_helper(supportingFact[1], number_of_spaces + 4)
+            else:
+                end_result += "Fact is not in the KB"
+
+        elif isinstance(fact_or_rule, Rule):
+            if fact_or_rule in self.rules:
+                rule = None
+                for i in self.rules:
+                    if fact_or_rule == i:
+                        rule = i
+                        break
+
+                end_result += "rule: ("
+
+                for i in range(len(rule.lhs)):
+                    if i != 0:
+                        end_result += ", "
+
+                    end_result += str(rule.lhs[i])
+
+                end_result += ") -> " + str(rule.rhs)
+
+                if rule.asserted:
+                    end_result += " ASSERTED"
+
+                for supportingFact in rule.supported_by:
+                    end_result += "\n"
+                    for i in range(number_of_spaces):
+                        end_result += " "
+                    end_result += "  SUPPORTED BY"
+                    end_result += "\n" + self.kb_explain_helper(supportingFact[0], number_of_spaces + 4)
+                    end_result += "\n" + self.kb_explain_helper(supportingFact[1], number_of_spaces + 4)
+            else:
+                end_result += "Rule is not in the KB"
+
+        else:
+            return False
+
+        return end_result
+
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
